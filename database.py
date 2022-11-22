@@ -1,4 +1,4 @@
-import sqlite3
+import sqlite3, os
 
 class Database():
     def __init__(self, database, table):
@@ -35,6 +35,7 @@ class Database():
 
     def delete_record(self, id):
         query = f"DELETE FROM {self.table} WHERE id = '{ id }'"
+        os.remove(fr'img/{id}.png') # delete thumbnail
         self.cursor.execute(query)
 
 def connectToDb(database, table):
@@ -44,6 +45,6 @@ def connectToDb(database, table):
 if __name__ == "__main__":
     db = Database("workoutBuddy.db", "workouts")
     #db.insert_record(yt.getInfo("https://www.youtube.com/watch?v=K-CrEi0ymMg"))
-    # db.delete_record("_shA5Xwe8_4")
+    # db.delete_record("xFsf-2VZMSk")
     print(db.get_all_records())
     db.close()

@@ -12,27 +12,21 @@ class TkVlcYoutubeStreamer():
         self.videoFrame = tk.Frame(parent, width = parent.winfo_screenwidth(),
                                    height = parent.winfo_screenheight(), bg="black")
 
-        # self.streamBtn = tk.Button(parent, text = "Stream", command = lambda : self.stream(link))
-        # self.closeBtn = tk.Button(parent, text = "Close", command= lambda: self.close())
-        # self.streamBtn.pack()
-        # self.closeBtn.pack()
+        self.streamBtn = tk.Button(parent, text = "Stream", command = lambda : self.stream(link))
+        self.closeBtn = tk.Button(parent, text = "Close", command= lambda: self.stop())
+        self.streamBtn.pack()
+        self.closeBtn.pack()
         self.videoFrame.pack()
-
-        # overriding parent close functionality
-        parent.protocol("WM_DELETE_WINDOW", lambda : self.close(parent))
 
         # intialize vlc
         self.vlcInstance = vlc.Instance()
         self.player = self.vlcInstance.media_player_new()
-        self.stream(link)
 
     def getHandle(self):
         return self.videoFrame.winfo_id()
 
-    def close(self, parent):
+    def stop(self):
         self.player.stop()
-        parent.destroy()
-
 
     def stream(self, link):
         media = self.vlcInstance.media_new(link)

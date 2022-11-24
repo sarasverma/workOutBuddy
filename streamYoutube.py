@@ -12,10 +12,12 @@ class TkVlcYoutubeStreamer():
         self.videoFrame = tk.Frame(parent, width = parent.winfo_screenwidth(),
                                    height = parent.winfo_screenheight(), bg="black")
 
-        self.streamBtn = tk.Button(parent, text = "Stream", command = lambda : self.stream(link))
-        self.closeBtn = tk.Button(parent, text = "Close", command= lambda: self.stop())
-        self.streamBtn.pack()
-        self.closeBtn.pack()
+        self.controlFrame = tk.Frame(parent)
+        self.controlFrame.pack()
+        self.streamBtn = tk.Button(self.controlFrame, text = "Stream", command = lambda : self.stream(link))
+        self.closeBtn = tk.Button(self.controlFrame, text = "Close", command= lambda: self.stop())
+        self.streamBtn.grid(row=0, column=0)
+        self.closeBtn.grid(row=0, column= 1)
         self.videoFrame.pack()
 
         # intialize vlc
@@ -27,6 +29,8 @@ class TkVlcYoutubeStreamer():
 
     def stop(self):
         self.player.stop()
+        self.controlFrame.destroy()
+
 
     def stream(self, link):
         media = self.vlcInstance.media_new(link)

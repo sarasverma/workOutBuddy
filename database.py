@@ -26,6 +26,7 @@ class Database():
     def insert_record(self, data):
         query = '''INSERT INTO {}({}) values ({})'''.format(self.table, ','.join(data.keys()), ','.join(data.values()))
         self.cursor.execute(query)
+        self.commit()
 
     def get_all_records(self):
         query = f"SELECT * FROM {self.table}"
@@ -36,6 +37,7 @@ class Database():
         query = f"DELETE FROM {self.table} WHERE id = '{ id }'"
         os.remove(fr'img/{id}.png') # delete thumbnail
         self.cursor.execute(query)
+        self.commit()
 
 def connectToDb(database, table):
     connection = Database(database, table)

@@ -44,6 +44,8 @@ class App(tk.Tk):
         self.feedHeading = ttk.Label(self.feedFrame, text="Your feeds..")
         self.feedHeading.pack()
 
+        self.feedVideoFrame = tk.Frame(self.feedFrame)
+        self.feedVideoFrame.pack(side= tk.LEFT)
         # card for youtube videoes
         self.cards = []
         self.imgs = []
@@ -52,13 +54,13 @@ class App(tk.Tk):
             self.cardCount += 1
             self.imgs.append(ImageTk.PhotoImage(Image.open(fr"img/{videoInfo[0]}.png").resize(
                 (self.winfo_width() *100, self.winfo_width()*100))))
-            self.cards.append(tk.Button(self.feedFrame, text = videoInfo[1],
+            self.cards.append(tk.Button(self.feedVideoFrame, text = videoInfo[1],
                                         command= lambda id=videoInfo[0]: self.openVideo(f"https://youtu.be/{id}")
                                         ,image= self.imgs[self.cardCount]))
             self.cards[self.cardCount].pack()
 
         if self.cardCount == -1:
-            tk.Label(self.feedFrame, text="No videoes in feed !").pack()
+            tk.Label(self.feedVideoFrame, text="No videoes in feed !").pack()
 
     def statsPage(self):
         self.statFrame = tk.Frame(self.tabControl)
@@ -69,8 +71,9 @@ class App(tk.Tk):
         self.poseCorrectionFrame.pack()
 
     def openVideo(self, link):
-        print(link)
-        videoFrame = streamYoutube.TkVlcYoutubeStreamer(self, streamYoutube.getYoutubeStreamLink(link))
+        self.videoPlayerFrame = tk.Frame(self.feedFrame)
+        videoFrame = streamYoutube.TkVlcYoutubeStreamer(self.videoPlayerFrame, streamYoutube.getYoutubeStreamLink(link))
+        self.videoPlayerFrame.pack(side= tk.RIGHT)
         pass
 
     def databaseConnection(self):
@@ -79,12 +82,11 @@ class App(tk.Tk):
     def addVideo(self, url):
         try:
             videoInfo = youtubeInfoExtract.getInfo(url)
-            print(videoInfo)
             self.db.insert_record(videoInfo)
             self.cardCount += 1
             self.imgs.append(ImageTk.PhotoImage(ImageTk.PhotoImage(Image.open(fr"img/{videoInfo['id'][1:-1]}.png").resize(
                 (self.winfo_width() *100, self.winfo_width()*100)))))
-            self.cards.append(tk.Button(self.feedFrame, text= videoInfo['title'],
+            self.cards.append(tk.Button(self.feedVideoFrame, text= videoInfo['title'],
                                         command=lambda : self.openVideo(f"https://youtu.be/{videoInfo['id']}")
                                         , image= self.imgs[self.cardCount]))
             self.cards[self.cardCount].pack()

@@ -36,9 +36,10 @@ class App(tk.Tk):
         self.feedFrame = ttk.Frame(self.tabControl)
         self.feedFrame.pack()
 
-        self.vidLinkEntry = tk.Entry(self.feedFrame)
+        self.vidLinkEntry = tk.Entry(self.feedFrame, width=self.winfo_width()*50)
         self.vidLinkEntry.pack()
-        tk.Button(self.feedFrame, text="Add video", command= lambda : self.addVideo(self.vidLinkEntry.get())).pack()
+        tk.Button(self.feedFrame, text="Add video", command= lambda : self.addVideo(self.vidLinkEntry.get())
+                  ,bg="red", fg="white").pack()
 
         self.feedHeading = ttk.Label(self.feedFrame, text="Your feeds..")
         self.feedHeading.pack()
@@ -78,9 +79,10 @@ class App(tk.Tk):
     def addVideo(self, url):
         try:
             videoInfo = youtubeInfoExtract.getInfo(url)
+            print(videoInfo)
             self.db.insert_record(videoInfo)
             self.cardCount += 1
-            self.imgs.append(ImageTk.PhotoImage(ImageTk.PhotoImage(Image.open(fr"img/{videoInfo['id']}.png").resize(
+            self.imgs.append(ImageTk.PhotoImage(ImageTk.PhotoImage(Image.open(fr"img/{videoInfo['id'][1:-1]}.png").resize(
                 (self.winfo_width() *100, self.winfo_width()*100)))))
             self.cards.append(tk.Button(self.feedFrame, text= videoInfo['title'],
                                         command=lambda : self.openVideo(f"https://youtu.be/{videoInfo['id']}")

@@ -3,6 +3,19 @@ class Database():
     def __init__(self, database, table):
         self.database = database
         self.table = table
+
+        # getting a schema
+        if table == 'workouts':
+            self.schema = '''id TEXT PRIMARY KEY NOT NULL, title TEXT NOT NULL,
+                    channel TEXT NOT NULL, view_count INTEGER NOT NULL,
+                    channel_id TEXT NOT NULL, duration INTEGER NOT NULL,
+                    categories JSON, tags JSON, added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP'''
+        elif table == 'calories':
+            self.schema = '''date DATESTAMP PRIMARY KEY DEFAULT (date()),
+                    calories_burnt INTEGER DEFAULT 0'''
+        else:
+            raise Exception("Schema not found !")
+        
         self.connection = sqlite3.connect(self.database)
         self.cursor = self.connection.cursor()
         self.create_table()
@@ -15,11 +28,7 @@ class Database():
         self.connection.close()
 
     def create_table(self):
-        query = '''CREATE TABLE IF NOT EXISTS {}(
-                    id TEXT PRIMARY KEY NOT NULL, title TEXT NOT NULL,
-                    channel TEXT NOT NULL, view_count INTEGER NOT NULL,
-                    channel_id TEXT NOT NULL, duration INTEGER NOT NULL,
-                    categories JSON, tags JSON, added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)'''.format(self.table)
+        query = '''CREATE TABLE IF NOT EXISTS {}({})'''.format(self.table, self.schema)
         self.cursor.execute(query)
         self.commit()
 
@@ -33,9 +42,10 @@ class Database():
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
-    def delete_record(self, id):
-        query = f"DELETE FROM {self.table} WHERE id = '{ id }'"
-        os.remove(fr'img/{id}.png') # delete thumbnail
+    def delete_record(self, field, value):
+        query = f"DELETE FROM {self.table} WHERE {field} = '{ value }'"
+        if self.table == 'workouts':
+            os.remove(fr'img/{id}.png') # delete thumbnail
         self.cursor.execute(query)
         self.commit()
 

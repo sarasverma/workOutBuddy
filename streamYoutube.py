@@ -46,7 +46,7 @@ class TkVlcYoutubeStreamer():
 
 
 if __name__ == "__main__":
-    link = "https://www.youtube.com/watch?v=He7-vOs_YPQ"
+    link = "https://www.youtube.com/watch?v=U3aoGDjDI2s"
     root = tk.Tk()
     root.geometry("600x600")
     videoFrame = TkVlcYoutubeStreamer(root, getYoutubeStreamLink(link))

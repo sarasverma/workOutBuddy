@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from PIL import ImageTk, Image
-import database, youtubeInfoExtract, streamYoutube
+import database, youtubeInfoExtract, streamYoutube, stats
 
 class App(tk.Tk):
     def __init__(self):
@@ -18,9 +18,6 @@ class App(tk.Tk):
         # different sections
         self.tabControl = ttk.Notebook(self)
         self.tabControl.pack(expand=1, fill='both')
-
-        self.scroll = tk.Scrollbar(self)
-        self.scroll.pack(side= tk.RIGHT, fill= tk.Y)
 
 
         # render layout
@@ -45,7 +42,12 @@ class App(tk.Tk):
         self.feedHeading.pack()
 
         self.feedVideoFrame = tk.Frame(self.feedFrame)
-        self.feedVideoFrame.pack(side= tk.LEFT)
+        self.feedVideoFrame.pack()
+
+        # scroll bar
+        self.scrollBar = ttk.Scrollbar(self.feedVideoFrame, orient= tk.VERTICAL)
+        self.scrollBar.pack(side=tk.RIGHT, fill=tk.Y)
+
         # card for youtube videoes
         self.cards = []
         self.imgs = []
@@ -59,12 +61,16 @@ class App(tk.Tk):
                                         ,image= self.imgs[self.cardCount]))
             self.cards[self.cardCount].pack()
 
+        # no video available
         if self.cardCount == -1:
             tk.Label(self.feedVideoFrame, text="No videoes in feed !").pack()
 
     def statsPage(self):
         self.statFrame = tk.Frame(self.tabControl)
         self.statFrame.pack()
+
+        # adding stat stuff
+        stats.Stats(self.statFrame)
 
     def poseCorrectionPage(self):
         self.poseCorrectionFrame = tk.Frame(self.tabControl)
@@ -73,8 +79,7 @@ class App(tk.Tk):
     def openVideo(self, link):
         self.videoPlayerFrame = tk.Frame(self.feedFrame)
         videoFrame = streamYoutube.TkVlcYoutubeStreamer(self.videoPlayerFrame, streamYoutube.getYoutubeStreamLink(link))
-        self.videoPlayerFrame.pack(side= tk.RIGHT)
-        pass
+        self.videoPlayerFrame.pack()
 
     def databaseConnection(self):
         return database.connectToDb("workoutBuddy.db", "workouts")

@@ -1,4 +1,4 @@
-import tkinter as tk
+import ttkbootstrap as ttk
 import database
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
@@ -7,7 +7,7 @@ class Stats:
     def __init__(self, parent):
         self.parent = parent
         self.db = self.connectToDatabase()
-        tk.Label(self.parent, text="Your statistics !").pack()
+        ttk.Label(self.parent, text="Your statistics !").pack()
         self.label = []
         self.data = []
         for record in self.db.get_all_records():
@@ -16,7 +16,7 @@ class Stats:
 
         # for blank data
         if self.label == []:
-            tk.Label(self.parent, text ="Start exercising to get data for analysis !").pack()
+            ttk.Label(self.parent, text ="Start exercising to get data for analysis !").pack()
         else:
             self.plot()
 
@@ -31,16 +31,15 @@ class Stats:
 
         self.canvas = FigureCanvasTkAgg(self.fig,master=self.parent)
         self.canvas.draw()
-        self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= 1)
+        self.canvas.get_tk_widget().pack(side='top', fill='both', expand= 1)
 
         # for navigation of plot
         self.toolbar = NavigationToolbar2Tk(self.canvas, self.parent)
         self.toolbar.update()
-        self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand=1)
-
+        self.canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
 
 if __name__ == '__main__':
-    root = tk.Tk()
+    root = ttk.Window()
     root.title("Embedding in Tk")
     root.geometry('600x600')
 

@@ -1,9 +1,9 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
+import ttkbootstrap as ttk
+from tkinter import messagebox
 from PIL import ImageTk, Image
 import database, youtubeInfoExtract, streamYoutube, stats
 
-class App(tk.Tk):
+class App(ttk.Window):
     def __init__(self):
         super().__init__()
 
@@ -33,20 +33,20 @@ class App(tk.Tk):
         self.feedFrame = ttk.Frame(self.tabControl)
         self.feedFrame.pack()
 
-        self.vidLinkEntry = tk.Entry(self.feedFrame, width=self.winfo_width()*50)
+        self.vidLinkEntry = ttk.Entry(self.feedFrame, width=self.winfo_width()*50)
         self.vidLinkEntry.pack()
-        tk.Button(self.feedFrame, text="Add video", command= lambda : self.addVideo(self.vidLinkEntry.get())
-                  ,bg="red", fg="white").pack()
+        ttk.Button(self.feedFrame, text="Add video", bootstyle= "danger"
+                ,command= lambda : self.addVideo(self.vidLinkEntry.get())).pack()
 
         self.feedHeading = ttk.Label(self.feedFrame, text="Your feeds..")
         self.feedHeading.pack()
 
-        self.feedVideoFrame = tk.Frame(self.feedFrame)
+        self.feedVideoFrame = ttk.Frame(self.feedFrame)
         self.feedVideoFrame.pack()
 
         # scroll bar
-        self.scrollBar = ttk.Scrollbar(self.feedVideoFrame, orient= tk.VERTICAL)
-        self.scrollBar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.scrollBar = ttk.Scrollbar(self.feedFrame, orient='vertical')
+        self.scrollBar.pack(side='right', fill='y')
 
         # card for youtube videoes
         self.cards = []
@@ -55,29 +55,29 @@ class App(tk.Tk):
         for videoInfo in self.db.get_all_records():
             self.cardCount += 1
             self.imgs.append(ImageTk.PhotoImage(Image.open(fr"img/{videoInfo[0]}.png").resize(
-                (self.winfo_width() *100, self.winfo_width()*100))))
-            self.cards.append(tk.Button(self.feedVideoFrame, text = videoInfo[1],
+                (100, 100))))
+            self.cards.append(ttk.Button(self.feedVideoFrame, text = videoInfo[1],
                                         command= lambda id=videoInfo[0]: self.openVideo(f"https://youtu.be/{id}")
-                                        ,image= self.imgs[self.cardCount]))
-            self.cards[self.cardCount].pack()
+                                        ,image= self.imgs[self.cardCount], bootstyle="light"))
+            self.cards[self.cardCount].pack(pady= 4)
 
         # no video available
         if self.cardCount == -1:
-            tk.Label(self.feedVideoFrame, text="No videoes in feed !").pack()
+            ttk.Label(self.feedVideoFrame, text="No videoes in feed !").pack()
 
     def statsPage(self):
-        self.statFrame = tk.Frame(self.tabControl)
+        self.statFrame = ttk.Frame(self.tabControl)
         self.statFrame.pack()
 
         # adding stat stuff
         stats.Stats(self.statFrame)
 
     def poseCorrectionPage(self):
-        self.poseCorrectionFrame = tk.Frame(self.tabControl)
+        self.poseCorrectionFrame = ttk.Frame(self.tabControl)
         self.poseCorrectionFrame.pack()
 
     def openVideo(self, link):
-        self.videoPlayerFrame = tk.Frame(self.feedFrame)
+        self.videoPlayerFrame = ttk.Frame(self.feedFrame)
         videoFrame = streamYoutube.TkVlcYoutubeStreamer(self.videoPlayerFrame, streamYoutube.getYoutubeStreamLink(link))
         self.videoPlayerFrame.pack()
 
@@ -89,11 +89,11 @@ class App(tk.Tk):
             videoInfo = youtubeInfoExtract.getInfo(url)
             self.db.insert_record(videoInfo)
             self.cardCount += 1
-            self.imgs.append(ImageTk.PhotoImage(ImageTk.PhotoImage(Image.open(fr"img/{videoInfo['id'][1:-1]}.png").resize(
-                (self.winfo_width() *100, self.winfo_width()*100)))))
-            self.cards.append(tk.Button(self.feedVideoFrame, text= videoInfo['title'],
+            self.imgs.append(ImageTk.PhotoImage(Image.open(fr"img/{videoInfo['id'][1:-1]}.png").resize(
+                (100, 100))))
+            self.cards.append(ttk.Button(self.feedVideoFrame, text= videoInfo['title'],
                                         command=lambda : self.openVideo(f"https://youtu.be/{videoInfo['id']}")
-                                        , image= self.imgs[self.cardCount]))
+                                        , image= self.imgs[self.cardCount], bootstyle  ="light"))
             self.cards[self.cardCount].pack()
 
         except Exception as error:

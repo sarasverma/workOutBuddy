@@ -19,7 +19,6 @@ class App(ttk.Window):
         self.tabControl = ttk.Notebook(self)
         self.tabControl.pack(expand=1, fill='both')
 
-
         # render layout
         self.feedPage()
         self.statsPage()
@@ -33,20 +32,29 @@ class App(ttk.Window):
         self.feedFrame = ttk.Frame(self.tabControl)
         self.feedFrame.pack()
 
-        self.vidLinkEntry = ttk.Entry(self.feedFrame, width=self.winfo_width()*50)
-        self.vidLinkEntry.pack()
-        ttk.Button(self.feedFrame, text="Add video", bootstyle= "danger"
-                ,command= lambda : self.addVideo(self.vidLinkEntry.get())).pack()
-
+        # add video
+        self.feedAddVideoFrame = ttk.Frame(self.feedFrame)
+        self.feedAddVideoFrame.pack()
+        self.vidLinkEntry = ttk.Entry(self.feedAddVideoFrame, width = 50)
+        self.vidLinkEntry.pack(side="left")
+        ttk.Button(self.feedAddVideoFrame, text="Add video", bootstyle= "danger"
+                ,command= lambda : self.addVideo(self.vidLinkEntry.get())).pack(side= "right", padx= 2)
         self.feedHeading = ttk.Label(self.feedFrame, text="Your feeds..")
         self.feedHeading.pack()
 
-        self.feedVideoFrame = ttk.Frame(self.feedFrame)
-        self.feedVideoFrame.pack()
+        # video feed
+        # canvas for scroll bar
+        self.feedVideoCanvas = ttk.Canvas(self.feedFrame)
+        self.feedVideoCanvas.pack(side= "left", fill="both", expand="yes")
+
+        self.feedVideoFrame = ttk.Frame(self.feedVideoCanvas)
+        self.feedVideoCanvas.create_window((0, 0), window= self.feedVideoFrame)
 
         # scroll bar
-        self.scrollBar = ttk.Scrollbar(self.feedFrame, orient='vertical')
+        self.scrollBar = ttk.Scrollbar(self.feedFrame, orient='vertical', command= self.feedVideoCanvas.yview)
         self.scrollBar.pack(side='right', fill='y')
+        self.feedVideoCanvas.configure(yscrollcommand = self.scrollBar.set)
+        self.feedVideoCanvas.bind('<Configure>', lambda e: self.feedVideoCanvas.configure(scrollregion = self.feedVideoCanvas.bbox('all')))
 
         # card for youtube videoes
         self.cards = []
@@ -55,7 +63,7 @@ class App(ttk.Window):
         for videoInfo in self.db.get_all_records():
             self.cardCount += 1
             self.imgs.append(ImageTk.PhotoImage(Image.open(fr"img/{videoInfo[0]}.png").resize(
-                (100, 100))))
+                (600, 400))))
             self.cards.append(ttk.Button(self.feedVideoFrame, text = videoInfo[1],
                                         command= lambda id=videoInfo[0]: self.openVideo(f"https://youtu.be/{id}")
                                         ,image= self.imgs[self.cardCount], bootstyle="light"))
@@ -90,7 +98,7 @@ class App(ttk.Window):
             self.db.insert_record(videoInfo)
             self.cardCount += 1
             self.imgs.append(ImageTk.PhotoImage(Image.open(fr"img/{videoInfo['id'][1:-1]}.png").resize(
-                (100, 100))))
+                (600, 400))))
             self.cards.append(ttk.Button(self.feedVideoFrame, text= videoInfo['title'],
                                         command=lambda : self.openVideo(f"https://youtu.be/{videoInfo['id']}")
                                         , image= self.imgs[self.cardCount], bootstyle  ="light"))

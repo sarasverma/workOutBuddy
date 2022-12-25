@@ -39,7 +39,9 @@ class App(ttk.Window):
         self.vidLinkEntry.pack(side="left")
         ttk.Button(self.feedAddVideoFrame, text="Add video", bootstyle= "danger"
                 ,command= lambda : self.addVideo(self.vidLinkEntry.get())).pack(side= "right", padx= 2)
-        self.feedHeading = ttk.Label(self.feedFrame, text="Your feeds..")
+
+        # heading
+        self.feedHeading = ttk.Label(self.feedFrame, text="Your feeds..", font= ('Helvetica bold', 26))
         self.feedHeading.pack()
 
         # video feed
@@ -85,9 +87,10 @@ class App(ttk.Window):
         self.poseCorrectionFrame.pack()
 
     def openVideo(self, link):
-        self.videoPlayerFrame = ttk.Frame(self.feedFrame)
-        videoFrame = streamYoutube.TkVlcYoutubeStreamer(self.videoPlayerFrame, streamYoutube.getYoutubeStreamLink(link))
-        self.videoPlayerFrame.pack()
+        self.videoPlayerWindow = ttk.Window(link)
+        self.videoPlayerWindow.geometry("600x600")
+        videoFrame = streamYoutube.TkVlcYoutubeStreamer(self.videoPlayerWindow, streamYoutube.getYoutubeStreamLink(link))
+        self.videoPlayerWindow.mainloop()
 
     def databaseConnection(self):
         return database.connectToDb("workoutBuddy.db", "workouts")

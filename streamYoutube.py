@@ -1,5 +1,7 @@
 import vlc, pafy, platform
 import ttkbootstrap as ttk
+from tkinter import messagebox
+
 def getYoutubeStreamLink(url):
     video = pafy.new(url)
     best = video.getbest()     # get best resolution
@@ -14,7 +16,7 @@ class TkVlcYoutubeStreamer():
         self.controlFrame.pack()
         self.streamBtn = ttk.Button(self.controlFrame, text = "Stream", command = lambda : self.stream(link)
                                     )
-        self.closeBtn = ttk.Button(self.controlFrame, text = "Close", command= lambda: self.stop())
+        self.closeBtn = ttk.Button(self.controlFrame, text = "Close", command= lambda: self.stop(parent))
         self.streamBtn.grid(row=0, column=0, padx=5, pady=2)
         self.closeBtn.grid(row=0, column= 1, padx=5, pady=2)
         self.videoFrame.pack()
@@ -25,10 +27,6 @@ class TkVlcYoutubeStreamer():
 
     def getHandle(self):
         return self.videoFrame.winfo_id()
-
-    def stop(self):
-        self.player.stop()
-        self.controlFrame.destroy()
 
     def stream(self, link):
         media = self.vlcInstance.media_new(link)
@@ -42,6 +40,13 @@ class TkVlcYoutubeStreamer():
             self.player.set_xwindow(self.getHandle())
         self.player.play()
 
+    def stop(self, parent):
+        self.player.stop()
+        self.controlFrame.destroy()
+        try:
+            parent.destroy()
+        except Exception as error:
+            messagebox.showerror("Error", str(error), parent=parent)
 
 if __name__ == "__main__":
     link = "https://www.youtube.com/watch?v=U3aoGDjDI2s"

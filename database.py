@@ -42,6 +42,16 @@ class Database():
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
+    def get_record(self, field, value):
+        query = f"SELECT * FROM {self.table} WHERE {field} = '{value}'"
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
+
+    def update_record(self, field, id, setField, value):
+        query = f"UPDATE {self.table} SET {setField} = {value} WHERE {field} = '{id}'"
+        self.cursor.execute(query)
+        self.commit()
+
     def delete_record(self, field, value):
         query = f"DELETE FROM {self.table} WHERE {field} = '{ value }'"
         if self.table == 'workouts':

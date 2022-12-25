@@ -1,7 +1,7 @@
 import ttkbootstrap as ttk
 from tkinter import messagebox
 from PIL import ImageTk, Image
-import database, youtubeInfoExtract, streamYoutube, stats
+import database, youtubeInfoExtract, streamYoutube, stats, pose
 
 class App(ttk.Window):
     def __init__(self):
@@ -26,7 +26,7 @@ class App(ttk.Window):
 
         self.tabControl.add(self.feedFrame, text= "Feed")
         self.tabControl.add(self.statFrame, text= "Statistic")
-        self.tabControl.add(self.poseCorrectionFrame, text= "Pose correction")
+        self.tabControl.add(self.poseFrame, text= "Pose recognition")
 
     def feedPage(self):
         self.feedFrame = ttk.Frame(self.tabControl)
@@ -83,8 +83,13 @@ class App(ttk.Window):
         stats.Stats(self.statFrame)
 
     def poseCorrectionPage(self):
-        self.poseCorrectionFrame = ttk.Frame(self.tabControl)
-        self.poseCorrectionFrame.pack()
+        self.poseFrame = ttk.Frame(self.tabControl)
+        self.poseFrame.pack()
+
+        self.poseButton = ttk.Frame(self.poseFrame)
+        self.poseButton.pack()
+        self.button1 = ttk.Button(self.poseButton, text= "Bisecp curl", bootstyle= "info"
+                ,command= lambda : pose.poseDetect("curl").poseFeed()).pack(side= "right", padx= 2)
 
     def openVideo(self, link):
         self.videoPlayerWindow = ttk.Window(link)

@@ -16,7 +16,7 @@ class TkVlcYoutubeStreamer():
         self.controlFrame.pack()
         self.streamBtn = ttk.Button(self.controlFrame, text = "Stream", command = lambda : self.stream(link)
                                     )
-        self.closeBtn = ttk.Button(self.controlFrame, text = "Close", command= lambda: self.stop(parent))
+        self.closeBtn = ttk.Button(self.controlFrame, text = "Stop", command= lambda: self.stop(parent))
         self.streamBtn.grid(row=0, column=0, padx=5, pady=2)
         self.closeBtn.grid(row=0, column= 1, padx=5, pady=2)
         self.videoFrame.pack()

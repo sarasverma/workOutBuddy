@@ -2,98 +2,100 @@ import cv2
 import mediapipe as mp
 import numpy as np
 
-mp_drawing = mp.solutions.drawing_utils  # drawing utility
-mp_pose = mp.solutions.pose  # pose estimating model
+class poseDetect:
+    def __init__(self, typeOfExercise):
+        self.mp_drawing = mp.solutions.drawing_utils  # drawing utility
+        self.mp_pose = mp.solutions.pose  # pose estimating model
+        self.typeOfExercise = typeOfExercise
 
+        # counter variables
+        self.count = 0
+        self.stage = None
 
-def calculate_angle(a, b, c):
-    a = np.array(a)
-    b = np.array(b)
-    c = np.array(c)
+    def calculate_angle(self, a, b, c):
+        a = np.array(a)
+        b = np.array(b)
+        c = np.array(c)
 
-    radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
-    angle = np.abs(radians * 180.0 / np.pi)
+        radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
+        angle = np.abs(radians * 180.0 / np.pi)
 
-    if angle > 180.0:
-        angle = 360 - angle
-    return angle
+        if angle > 180.0:
+            angle = 360 - angle
+        return angle
 
-def counter():
-    # video feed
-    cap = cv2.VideoCapture(0)
+    def exerciseParameter(self):
+        if self.typeOfExercise == "curl":
+            landmarks = self.results.pose_landmarks.landmark
 
-    # curl counter variables
-    counter = 0
-    stage = None
+            # get coordinates [x, y]
+            shoulder = [landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
+                        landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+            elbow = [landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
+                     landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+            wrist = [landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].x,
+                     landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].y]
 
-    # setup mediapipe instance
-    with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
-        while cap.isOpened():
-            ret, frame = cap.read()
+            # return angle b/w coordinates
+            return self.calculate_angle(shoulder, elbow, wrist)
+        pass
 
-            # opencv BGR, mediapipe RGB
-            image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            image.flags.writeable = False  # saves memory
+    def counter(self):
+        # extract landmarks based on visibility
+        try:
+            angle = self.exerciseParameter()
 
-            # make detection
-            results = pose.process(image)
+            # angle parameter
+            if angle > 160:
+                self.stage = "Down"
+            if angle < 30 and self.stage == "Down":
+                self.stage = "Up"
+                self.count += 1
 
-            image.flags.writeable = True
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            # display rep and stage data
+            cv2.rectangle(self.image, (0, 0), (225, 73), (255, 194, 66), -1)
+            cv2.putText(self.image, str(self.count), (10, 60),
+                                cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2, cv2.LINE_AA)
+            cv2.putText(self.image, self.stage, (60, 60),
+                    cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2, cv2.LINE_AA)
 
-            # extract landmarks (sometime not visible in camera may throw error)
-            try:
-                landmarks = results.pose_landmarks.landmark
+        except:
+            pass
 
-                # get coordinates
-                shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
-                            landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-                elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
-                         landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
-                wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,
-                         landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+    def poseFeed(self):
+        cap = cv2.VideoCapture(0) # video feed
 
-                # calculate angle
-                angle = calculate_angle(shoulder, elbow, wrist)
+        # setup mediapipe instance
+        with self.mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+            while cap.isOpened():
+                ret, frame = cap.read()
 
-                # visualize angle
-                cv2.putText(image, str(angle), tuple(np.multiply(elbow, [640, 480]).astype(int)),
-                            cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 2, cv2.LINE_AA)
+                # opencv BGR, mediapipe RGB
+                self.image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                self.image.flags.writeable = False  # saves memory
 
-                # curl counter logic
-                if angle > 160:
-                    stage = "Down"
-                if angle < 30 and stage == "Down":
-                    stage = "Up"
-                    counter += 1
-                    print(counter)
+                self.results = pose.process(self.image) # pose detection
 
-            except:
-                pass
+                self.image.flags.writeable = True
+                self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
 
-            # Render curl counter and render detection
-            cv2.rectangle(image, (0, 0), (225, 73), (245, 117, 16), -1)
+                # render counter
+                self.counter()
 
-            # Rep data
-            cv2.putText(image, str(counter), (10, 60),
-                        cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2, cv2.LINE_AA)
-            # Stage data
-            cv2.putText(image, stage, (60, 60),
-                        cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2, cv2.LINE_AA)
+                # render detections
+                self.mp_drawing.draw_landmarks(self.image, self.results.pose_landmarks, self.mp_pose.POSE_CONNECTIONS,
+                                          self.mp_drawing.DrawingSpec(color=(255, 194, 66), thickness=2, circle_radius=2),
+                                          self.mp_drawing.DrawingSpec(color=(255, 244, 133), thickness=2, circle_radius=2))
 
-            # Render detections
-            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-                                      mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=2),
-                                      mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2))
+                # cv2.flip(image, 1) front camera
+                cv2.imshow('Mediapipe Feed', self.image)
 
-            # cv2.flip(image, 1) front camera
-            cv2.imshow('Mediapipe Feed', image)
+                if cv2.waitKey(10) & 0xFF == ord('q'):
+                    break
 
-            if cv2.waitKey(10) & 0xFF == ord('q'):
-                break
-
-        cap.release()
-        cv2.destroyAllWindows()
+            cap.release()
+            cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    counter()
+    pd = poseDetect("curl")
+    pd.poseFeed()

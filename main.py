@@ -89,7 +89,7 @@ class App(ttk.Window):
         self.poseButton = ttk.Frame(self.poseFrame)
         self.poseButton.pack()
         self.button1 = ttk.Button(self.poseButton, text= "Bisecp curl", bootstyle= "info"
-                ,command= lambda : pose.poseDetect("curl").poseFeed()).pack(side= "right", padx= 2)
+                ,command= lambda : pose.poseDetect("curl")).pack(side= "right", padx= 2)
 
     def openVideo(self, link):
         self.videoPlayerWindow = ttk.Window(link)

@@ -11,6 +11,7 @@ class poseDetect:
         # counter variables
         self.count = 0
         self.stage = None
+        self.poseFeed()
 
     def calculate_angle(self, a, b, c):
         a = np.array(a)
@@ -24,43 +25,90 @@ class poseDetect:
             angle = 360 - angle
         return angle
 
-    def exerciseParameter(self):
-        if self.typeOfExercise == "curl":
+    def exercise_parameter_util(self):
+        try:    # extract landmarks based on visibility
             landmarks = self.results.pose_landmarks.landmark
 
-            # get coordinates [x, y]
-            shoulder = [landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
-                        landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-            elbow = [landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
-                     landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
-            wrist = [landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].x,
-                     landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+            # get coordinates [x, y] from landmark and return angle
+            if self.typeOfExercise == "curl":
+                shoulder = [landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
+                            landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+                elbow = [landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
+                         landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+                wrist = [landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].x,
+                         landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+                return self.calculate_angle(shoulder, elbow, wrist)
 
-            # return angle b/w coordinates
-            return self.calculate_angle(shoulder, elbow, wrist)
-        pass
+            elif self.typeOfExercise == "pushup":
+                shoulder = [landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
+                            landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+                elbow = [landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
+                         landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+                wrist = [landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].x,
+                         landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+                return self.calculate_angle(shoulder, elbow, wrist)
+
+            elif self.typeOfExercise == "squat":
+                hip = [landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].y,
+                       landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].y]
+                knee = [landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].y,
+                       landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].y]
+                ankle = [landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].y,
+                       landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
+                return self.calculate_angle(hip, knee, ankle)
+
+            elif self.typeOfExercise == "situp":
+                shoulder = [landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
+                            landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+                hip = [landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].x,
+                         landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value].y]
+                knee = [landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].x,
+                         landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value].y]
+                return self.calculate_angle(shoulder, hip, knee)
+
+        except:
+            pass
 
     def counter(self):
-        # extract landmarks based on visibility
-        try:
-            angle = self.exerciseParameter()
+        angle = self.exercise_parameter_util() # get angle
 
-            # angle parameter
+        if angle == None: # if body part not visible
+            return None
+
+        if self.typeOfExercise == "curl":
             if angle > 160:
                 self.stage = "Down"
             if angle < 30 and self.stage == "Down":
                 self.stage = "Up"
                 self.count += 1
 
-            # display rep and stage data
-            cv2.rectangle(self.image, (0, 0), (225, 73), (255, 194, 66), -1)
-            cv2.putText(self.image, str(self.count), (10, 60),
-                                cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2, cv2.LINE_AA)
-            cv2.putText(self.image, self.stage, (60, 60),
-                    cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2, cv2.LINE_AA)
+        elif self.typeOfExercise == "pushup":
+            if angle > 160:
+                self.stage = "Up"
+            if angle < 70 and self.stage == "Up":
+                self.stage = "Down"
+                self.count += 1
 
-        except:
-            pass
+        elif self.typeOfExercise == "squat":
+            if angle > 160:
+                self.stage = "Up"
+            if angle < 70 and self.stage == "Up":
+                self.stage = "Down"
+                self.count += 1
+
+        elif self.typeOfExercise == "situp":
+            if angle > 105:
+                self.stage = "Down"
+            if angle < 55 and self.stage == "Down":
+                self.stage = "Up"
+                self.count += 1
+
+        # display rep and stage data
+        cv2.rectangle(self.image, (0, 0), (225, 73), (255, 194, 66), -1)
+        cv2.putText(self.image, str(self.count), (10, 60),
+                        cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(self.image, self.stage, (60, 60),
+                    cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2, cv2.LINE_AA)
 
     def poseFeed(self):
         cap = cv2.VideoCapture(0) # video feed
@@ -98,4 +146,3 @@ class poseDetect:
 
 if __name__ == '__main__':
     pd = poseDetect("curl")
-    pd.poseFeed()

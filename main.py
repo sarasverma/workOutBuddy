@@ -90,6 +90,12 @@ class App(ttk.Window):
         self.poseButton.pack()
         self.button1 = ttk.Button(self.poseButton, text= "Bisecp curl", bootstyle= "info"
                 ,command= lambda : pose.poseDetect("curl")).pack(side= "right", padx= 2)
+        self.button2 = ttk.Button(self.poseButton, text="Push up", bootstyle="info"
+                                  , command=lambda: pose.poseDetect("pushup")).pack(side="right", padx=2)
+        self.button3 = ttk.Button(self.poseButton, text="Squat", bootstyle="info"
+                                  , command=lambda: pose.poseDetect("squat")).pack(side="right", padx=2)
+        self.button4 = ttk.Button(self.poseButton, text="Sit up", bootstyle="info"
+                                  , command=lambda: pose.poseDetect("situp")).pack(side="right", padx=2)
 
     def openVideo(self, link):
         self.videoPlayerWindow = ttk.Window(link)
